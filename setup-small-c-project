@@ -1,0 +1,91 @@
+#!/bin/sh
+
+if [[ $1 == "-h" || $1 == "" || $1 == " " ]]; then
+  echo "    C Project setup script, by VerbenaIDK
+
+  Sets up a basic C project with a simple build script.
+  The inputs should only be project name.
+
+  It builds the following structure:
+  
+   ─Project-Name/
+    ├─src/
+    │ └─main.c
+    ├─lib/
+    ├─build/
+    │ ├─dev/
+    │ └─release/
+    ├─project.env
+    ├─build.sh
+    ├─build-release.sh
+    └─test-project (sh)
+
+  project.env will have every variable for the project, the default executable name will be the project name.
+    Licensed under MIT"
+else
+  echo "Creating C project $1..."
+
+  PROJECT_NAME=$1
+  PROJECT_DIR=$PWD/$1
+
+  mkdir $PROJECT_DIR
+  mkdir $PROJECT_DIR/src
+  mkdir $PROJECT_DIR/lib
+  mkdir $PROJECT_DIR/build
+  mkdir $PROJECT_DIR/build/dev
+  mkdir $PROJECT_DIR/build/release
+
+
+  touch $PROJECT_DIR/project.env
+  touch $PROJECT_DIR/build.sh
+  touch $PROJECT_DIR/build-release.sh
+  touch $PROJECT_DIR/test-project
+
+  echo '#include <stdio.h>
+
+int main() {
+  printf("Hello, World!");
+}' > $PROJECT_DIR/src/main.c
+
+  echo "PROJECT_NAME=$PROJECT_NAME" > $PROJECT_DIR/project.env
+
+  echo 'SRC_DIR=src
+LIB_DIR=lib
+BUILD_DIR=build
+DEV_BUILD_DIR=$BUILD_DIR/dev
+RELEASE_BUILD_DIR=$BUILD_DIR/release
+# Defaults to clang!
+CC=clang
+CCFLAGS=
+RELEASE_CCFLAGS=
+' >> $PROJECT_DIR/project.env
+
+  echo '#!/bin/sh
+source ./project.env
+
+$CC $(find $SRC_DIR $LIB_DIR -type f -iregex ".*\.c") $CCFLAGS -I./$LIB_DIR -o ./$DEV_BUILD_DIR/$PROJECT_NAME
+' > $PROJECT_DIR/build.sh
+
+  echo '#!/bin/sh
+source ./project.env
+
+$CC $(find $SRC_DIR $LIB_DIR -type f -iregex ".*\.c") $RELEASE_CCFLAGS -I./$LIB_DIR -o ./$RELEASE_BUILD_DIR/$PROJECT_NAME
+' > $PROJECT_DIR/build-release.sh
+
+  echo '#!/bin/sh
+source ./project.env
+
+if [[ $1 == "release" || $1 == "" || $1 == " " ]]; then
+  ./build-release.sh
+  ./$RELEASE_BUILD_DIR/$PROJECT_NAME
+
+else
+  ./build.sh
+  ./$DEV_BUILD_DIR/$PROJECT_NAME
+fi
+' > $PROJECT_DIR/test-project
+
+  chmod +x $PROJECT_DIR/build.sh $PROJECT_DIR/build-release.sh $PROJECT_DIR/test-project
+
+  echo "Done!"
+fi
