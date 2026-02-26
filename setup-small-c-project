@@ -40,6 +40,7 @@ else
   touch $PROJECT_DIR/build.sh
   touch $PROJECT_DIR/build-release.sh
   touch $PROJECT_DIR/test-project
+  touch $PROJECT_DIR/compile_flags.txt
 
   echo '#include <stdio.h>
 
@@ -84,6 +85,8 @@ else
   ./$DEV_BUILD_DIR/$PROJECT_NAME
 fi
 ' > $PROJECT_DIR/test-project
+
+    echo '-I./lib' > $PROJECT_DIR/compile_flags.txt
 
   chmod +x $PROJECT_DIR/build.sh $PROJECT_DIR/build-release.sh $PROJECT_DIR/test-project
 
